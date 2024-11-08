@@ -20,7 +20,7 @@
           </li>
 
           <li class="nav-item">
-            <a class="nav-link" href="/login"><button type="button" class="btn btn-primary">Signin</button></a>
+            <a class="nav-link" href="/signin"><button type="button" class="btn btn-primary">Signin</button></a>
           </li>
 
         </ul>
