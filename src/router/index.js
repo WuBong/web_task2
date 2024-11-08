@@ -21,7 +21,7 @@ const routes = [
     name: 'signin',
     component: function () {
       return import(/* webpackChunkName: "about" */ '../views/SignIn.vue')
-    }
+    },
   },
 
   {
@@ -46,7 +46,8 @@ router.beforeEach((to, from, next) => {
   if (to.matched.some((record) => record.meta.requiresAuth) && !isLoggedIn) {
     // 로그인이 필요하고, 로그인되어 있지 않다면 /signin으로 이동
     next({ path: '/signin' });
-  } else {
+  } 
+  else {
     // 그 외의 경우는 정상적으로 이동
     next();
   }

@@ -122,9 +122,11 @@
           } else {
             localStorage.removeItem("rememberedUser");
           }
-  
+            // 페이지 새로고침
+        this.$router.push("/");
           this.showToastMessage("로그인 성공!");
-          this.$router.push("/");
+  
+
         } else {
           this.showToastMessage("아이디 또는 비밀번호가 일치하지 않습니다.");
         }
