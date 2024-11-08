@@ -71,7 +71,7 @@
   
         // Remove remembered user from localStorage
         localStorage.removeItem("rememberedUser");
-  
+        localStorage.removeItem("user");
         this.isLoggedIn = false;
         this.$router.push("/signin");  // Redirect to the login page
       },

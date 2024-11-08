@@ -114,6 +114,11 @@
         };
         localStorage.setItem("user", JSON.stringify(userData));
         this.showToastMessage("회원가입이 완료되었습니다!");
+        
+        // 부모 컴포넌트에 회원가입 성공 이벤트 전달
+        this.$emit('signup-success'); // 부모 컴포넌트에서 로그인 폼으로 전환하도록 처리
+  
+        // 로그인 페이지로 리다이렉트
         this.$router.push("/signin");
       },
     },
