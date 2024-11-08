@@ -1,19 +1,4 @@
 <template>
-<<<<<<< Updated upstream
-  <div>
-    <button type="button" class="btn btn-primary">Primary</button>
-  <h1>초기단계</h1>
-  </div>
-</template>
-
-<script>
-
-
-</script>
-
-<style>
-
-=======
   <nav>
     <router-link to="/">Home</router-link> |
     <router-link to="/about">About</router-link>|
@@ -59,5 +44,4 @@ nav a {
 nav a.router-link-exact-active {
   color: #42b983;
 }
->>>>>>> Stashed changes
 </style>
