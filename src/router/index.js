@@ -5,24 +5,20 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    component: HomeView
+    component: HomeView,
+    meta: { requiresAuth: true }, // 로그인 필요
   },
   {
     path: '/about',
     name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
     component: function () {
       return import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
-    }
+    },
+    meta: { requiresAuth: true }, // 로그인 필요
   },
   {
     path: '/signin',
     name: 'signin',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
     component: function () {
       return import(/* webpackChunkName: "about" */ '../views/SignIn.vue')
     }
@@ -31,12 +27,10 @@ const routes = [
   {
     path: '/wishlist',
     name: 'Wishlist',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
     component: function () {
       return import(/* webpackChunkName: "about" */ '../views/Wishlist.vue')
-    }
+    },
+    meta: { requiresAuth: true }, // 로그인 필요
   },
 ]
 
@@ -44,5 +38,18 @@ const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes
 })
+
+// 네비게이션 가드 설정
+router.beforeEach((to, from, next) => {
+  const isLoggedIn = JSON.parse(localStorage.getItem('user'))?.isLoggedIn;
+
+  if (to.matched.some((record) => record.meta.requiresAuth) && !isLoggedIn) {
+    // 로그인이 필요하고, 로그인되어 있지 않다면 /signin으로 이동
+    next({ path: '/signin' });
+  } else {
+    // 그 외의 경우는 정상적으로 이동
+    next();
+  }
+});
 
 export default router

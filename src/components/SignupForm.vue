@@ -1,66 +1,128 @@
 <template>
-    <v-card class="pa-4">
-      <v-card-title class="text-h5">회원가입</v-card-title>
-      <v-card-text>
-        <v-form @submit.prevent="signup">
-          <v-text-field
-            label="이메일"
-            v-model="email"
-            type="email"
-            required
-          ></v-text-field>
+    <div class="container mt-5">
+      <h2>회원가입</h2>
+      <form @submit.prevent="handleSignUp">
+        <div class="mb-3">
+          <label for="id" class="form-label">아이디 (이메일 형식)</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="id" 
+            v-model="id" 
+            required 
+            :class="{ 'is-invalid': !isEmailValid && id }"
+          />
+          <div class="invalid-feedback">
+            유효한 이메일 주소를 입력해주세요.
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">비밀번호</label>
+          <input type="password" class="form-control" id="password" v-model="password" required />
+        </div>
+        <div class="mb-3">
+          <label for="confirmPassword" class="form-label">비밀번호 확인</label>
+          <input type="password" class="form-control" id="confirmPassword" v-model="confirmPassword" required />
+        </div>
+        <div class="form-check mb-3">
+          <input 
+            type="checkbox" 
+            class="form-check-input" 
+            id="termsCheckbox" 
+            v-model="termsAgreed" 
+            required 
+          />
+          <label class="form-check-label" for="termsCheckbox">
+            <span :class="{ 'text-danger': !termsAgreed }">약관에 동의합니다.</span>
+          </label>
+        </div>
+        <button type="submit" class="btn btn-primary">회원가입</button>
+      </form>
   
-          <v-text-field
-            label="비밀번호"
-            v-model="password"
-            type="password"
-            required
-          ></v-text-field>
-  
-          <v-text-field
-            label="비밀번호 확인"
-            v-model="passwordConfirmation"
-            type="password"
-            required
-          ></v-text-field>
-  
-          <v-checkbox
-            v-model="agreeTerms"
-            label="이용약관에 동의합니다"
-            required
-          ></v-checkbox>
-  
-          <v-btn type="submit" color="primary" class="mt-4" block>회원가입</v-btn>
-        </v-form>
-      </v-card-text>
-    </v-card>
+      <!-- Toast 메시지 -->
+      <div 
+        class="toast-container position-fixed bottom-0 end-0 p-3" 
+        style="z-index: 11">
+        <div 
+          class="toast" 
+          role="alert" 
+          aria-live="assertive" 
+          aria-atomic="true" 
+          :class="{ 'show': showToast }"
+          data-bs-autohide="true">
+          <div class="toast-header">
+            <strong class="me-auto">알림</strong>
+            <button 
+              type="button" 
+              class="btn-close" 
+              @click="showToast = false" 
+              aria-label="Close"></button>
+          </div>
+          <div class="toast-body">
+            {{ toastMessage }}
+          </div>
+        </div>
+      </div>
+    </div>
   </template>
   
   <script>
   export default {
     data() {
       return {
-        email: '',
-        password: '',
-        passwordConfirmation: '',
-        agreeTerms: false,
+        id: "",
+        password: "",
+        confirmPassword: "",
+        termsAgreed: false,
+        wishlist: [],
+        showToast: false,
+        toastMessage: "",
       };
     },
+    computed: {
+      isEmailValid() {
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return emailPattern.test(this.id);
+      },
+    },
     methods: {
-      signup() {
-        if (this.password !== this.passwordConfirmation) {
-          alert('비밀번호가 일치하지 않습니다.');
+      showToastMessage(message) {
+        this.toastMessage = message;
+        this.showToast = true;
+        setTimeout(() => {
+          this.showToast = false;
+        }, 3000);
+      },
+      handleSignUp() {
+        if (!this.isEmailValid) {
+          this.showToastMessage("아이디는 이메일 형식이어야 합니다.");
           return;
         }
-        // 회원가입 로직 처리
-        console.log("회원가입 시도:", this.email, this.password);
-        this.$emit('toggleForm'); // 회원가입 후 로그인 화면으로 돌아가기
+        if (this.password !== this.confirmPassword) {
+          this.showToastMessage("비밀번호가 일치하지 않습니다.");
+          return;
+        }
+        if (!this.termsAgreed) {
+          this.showToastMessage("약관에 동의해야 회원가입이 가능합니다.");
+          return;
+        }
+        const userData = {
+          id: this.id,
+          password: this.password,
+          isLoggedIn: false,
+          wishlist: this.wishlist,
+        };
+        localStorage.setItem("user", JSON.stringify(userData));
+        this.showToastMessage("회원가입이 완료되었습니다!");
+        this.$router.push("/signin");
       },
     },
   };
   </script>
   
   <style scoped>
-  /* 추가적인 스타일 */
+  .container {
+    max-width: 500px;
+  }
   </style>
   
