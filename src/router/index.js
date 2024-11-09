@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import MovieDetail from '../views/MovieDetail.vue';
 
 const routes = [
   {
@@ -35,9 +36,7 @@ const routes = [
   {
     path: '/movie/:id',
     name: 'MovieDetail',
-    component: function () {
-      return import(/* webpackChunkName: "about" */ '../views/MovieDetail.vue')
-    },
+    component: MovieDetail, 
     meta: { requiresAuth: true }, // 로그인 필요
   },
 ]
