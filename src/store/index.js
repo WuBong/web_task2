@@ -1,14 +1,36 @@
+// src/store/index.js
 import { createStore } from 'vuex'
 
-export default createStore({
-  state: {
-  },
-  getters: {
+const store = createStore({
+  state() {
+    return {
+      // 상태 초기화
+      user: null,
+      isAuthenticated: false,
+    }
   },
   mutations: {
+    setUser(state, payload) {
+      state.user = payload
+      state.isAuthenticated = true
+    },
+    logout(state) {
+      state.user = null
+      state.isAuthenticated = false
+    }
   },
   actions: {
+    login({ commit }, user) {
+      commit('setUser', user)
+    },
+    logout({ commit }) {
+      commit('logout')
+    }
   },
-  modules: {
+  getters: {
+    isAuthenticated: (state) => state.isAuthenticated,
+    getUser: (state) => state.user,
   }
 })
+
+export default store

@@ -32,6 +32,14 @@ const routes = [
     },
     meta: { requiresAuth: true }, // 로그인 필요
   },
+  {
+    path: '/movie/:id',
+    name: 'MovieDetail',
+    component: function () {
+      return import(/* webpackChunkName: "about" */ '../views/MovieDetail.vue')
+    },
+    meta: { requiresAuth: true }, // 로그인 필요
+  },
 ]
 
 const router = createRouter({
