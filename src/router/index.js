@@ -30,6 +30,7 @@ const routes = [
     component: function () {
       return import(/* webpackChunkName: "about" */ '../views/Popular.vue')
     },
+    meta: { requiresAuth: true }, // 로그인 필요
   },
   {
     path: '/wishlist',
