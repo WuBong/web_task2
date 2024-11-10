@@ -20,12 +20,14 @@
             <div class="card-body">
               <h5 class="card-title text-truncate">{{ movie.title }}</h5>
               <p class="card-text">{{ formatDate(movie.release_date) }}</p>
-              <!-- Wishlist 버튼 -->
+              <!-- Wishlist 버튼 텍스트 -->
               <button
-                class="btn btn-success btn-sm wishlist-btn"
-                @click.stop="addToWishlist(movie)"
+                class="wishlist-btn"
+                :class="wishlistContains(movie) ? 'btn-remove' : 'btn-add'"
+                @click.stop="toggleWishlist(movie)"
+                aria-label="Add/Remove to wishlist"
               >
-                Add to Wishlist
+                {{ wishlistContains(movie) ? 'Remove from Wishlist' : 'Add to Wishlist' }}
               </button>
             </div>
           </div>
@@ -91,18 +93,30 @@
         return new Date(date).toLocaleDateString();
       },
   
-      // 영화 'wishlist'에 추가
-      addToWishlist(movie) {
+      // 영화가 wishlist에 있는지 확인
+      wishlistContains(movie) {
+        const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+        return wishlist.some(item => item.id === movie.id);
+      },
+  
+      // 영화 wishlist에 추가/삭제
+      toggleWishlist(movie) {
         let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-        
-        // 이미 'wishlist'에 추가된 영화가 있는지 체크
-        if (!wishlist.some(item => item.id === movie.id)) {
+  
+        if (this.wishlistContains(movie)) {
+          // wishlist에서 영화 제거
+          wishlist = wishlist.filter(item => item.id !== movie.id);
+          localStorage.setItem('wishlist', JSON.stringify(wishlist));
+          this.showToastMessage(`${movie.title} has been removed from your wishlist.`);
+        } else {
+          // wishlist에 영화 추가
           wishlist.push(movie);
           localStorage.setItem('wishlist', JSON.stringify(wishlist));
           this.showToastMessage(`${movie.title} has been added to your wishlist.`);
-        } else {
-          this.showToastMessage(`${movie.title} is already in your wishlist.`);
         }
+  
+        // Force a re-render to reflect the changes immediately
+        this.$forceUpdate();
       },
   
       // Toast 메시지 표시
@@ -127,6 +141,7 @@
   }
   
   .movie-card {
+    position: relative; /* 카드에 상대 위치 설정 */
     transition: transform 0.3s ease-in-out;
   }
   
@@ -196,11 +211,49 @@
     transform: translateY(0);
   }
   
-  /* Wishlist 버튼 스타일 */
+  /* 기본 버튼 스타일 */
   .wishlist-btn {
     position: absolute;
     bottom: 10px;
     right: 10px;
+    background: #007bff; /* 버튼 배경색 */
+    color: white; /* 텍스트 색상 */
+    border: 1px solid #007bff; /* 테두리 색상 */
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s ease, border 0.3s ease;
+  }
+  
+  .wishlist-btn:hover {
+    background: #0056b3; /* hover 시 버튼 색상 */
+    border-color: #0056b3; /* hover 시 테두리 색상 */
+  }
+  
+  .wishlist-btn:focus {
+    outline: none; /* 포커스 시 테두리 제거 */
+  }
+  
+  /* 추가/제거 버튼 상태 */
+  .btn-add {
+    background-color: #28a745; /* 추가 버튼 색상 */
+    border-color: #28a745;
+  }
+  
+  .btn-remove {
+    background-color: #dc3545; /* 제거 버튼 색상 */
+    border-color: #dc3545;
+  }
+  
+  .btn-add:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+  }
+  
+  .btn-remove:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
   }
   </style>
   
