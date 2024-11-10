@@ -1,212 +1,143 @@
 <template>
-  <div class="container">
-    <div class="movie-section">
-      <h2 class="text-center my-4">Now Playing</h2>
-      <div class="row movie-list">
-        <div
-          v-for="(movie, index) in nowPlayingMovies"
-          :key="movie.id"
-          class="col-12 col-sm-6 col-md-4 col-lg-2 mb-4 movie-card"
-          @click="selectMovie(movie)"
-          style="cursor: pointer;"
-        >
-          <div class="card">
-            <img
-              :src="getMovieImageUrl(movie.poster_path)"
-              class="card-img-top movie-poster"
-              :alt="movie.title"
-              height="200px"
-            />
+    <div class="container mt-5">
+      <h2>로그인</h2>
+      <form @submit.prevent="handleLogin">
+        <div class="mb-3">
+          <label for="id" class="form-label">아이디 (이메일 형식)</label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="id" 
+            v-model="id" 
+            required 
+            :class="{ 'is-invalid': !isEmailValid && id }"
+          />
+          <div class="invalid-feedback">
+            유효한 이메일 주소를 입력해주세요.
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">비밀번호</label>
+          <input 
+            type="password" 
+            class="form-control" 
+            id="password" 
+            v-model="password" 
+            required 
+          />
+        </div>
+        <div class="form-check mb-3">
+          <input 
+            type="checkbox" 
+            class="form-check-input" 
+            id="rememberMe" 
+            v-model="rememberMe" 
+          />
+          <label class="form-check-label" for="rememberMe">Remember me</label>
+        </div>
+        <button type="submit" class="btn btn-primary">로그인</button>
+      </form>
+  
+      <!-- Toast 메시지 -->
+      <div 
+        class="toast-container position-fixed bottom-0 end-0 p-3" 
+        style="z-index: 11">
+        <div 
+          class="toast" 
+          role="alert" 
+          aria-live="assertive" 
+          aria-atomic="true" 
+          :class="{ 'show': showToast }"
+          data-bs-autohide="true">
+          <div class="toast-header">
+            <strong class="me-auto">알림</strong>
+            <button 
+              type="button" 
+              class="btn-close" 
+              @click="showToast = false" 
+              aria-label="Close"></button>
+          </div>
+          <div class="toast-body">
+            {{ toastMessage }}
           </div>
         </div>
       </div>
     </div>
-
-    <div class="movie-section">
-      <h2 class="text-center my-4">Upcoming Movies</h2>
-      <div class="row movie-list">
-        <div
-          v-for="(movie, index) in upcomingMovies"
-          :key="movie.id"
-          class="col-12 col-sm-6 col-md-4 col-lg-2 mb-4 movie-card"
-          @click="selectMovie(movie)"
-          style="cursor: pointer;"
-        >
-          <div class="card">
-            <img
-              :src="getMovieImageUrl(movie.poster_path)"
-              class="card-img-top movie-poster"
-              :alt="movie.title"
-              height="200px"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="movie-section">
-      <h2 class="text-center my-4">Top Rated Movies</h2>
-      <div class="row movie-list">
-        <div
-          v-for="(movie, index) in topRatedMovies"
-          :key="movie.id"
-          class="col-12 col-sm-6 col-md-4 col-lg-2 mb-4 movie-card"
-          @click="selectMovie(movie)"
-          style="cursor: pointer;"
-        >
-          <div class="card">
-            <img
-              :src="getMovieImageUrl(movie.poster_path)"
-              class="card-img-top movie-poster"
-              :alt="movie.title"
-              height="200px"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 선택된 영화 정보 -->
-    <div v-if="selectedMovie" class="selected-movie">
-      <div class="movie-detail">
-        <button class="close-btn" @click="deselectMovie">×</button>
-        <img
-          :src="getMovieImageUrl(selectedMovie.poster_path)"
-          class="img-fluid large-poster"
-          alt="selected movie poster"
-        />
-        <div class="movie-description fade-in">
-          <h3>{{ selectedMovie.title }}</h3>
-          <p><strong>Release Date:</strong> {{ formatDate(selectedMovie.release_date) }}</p>
-          <p><strong>Rating:</strong> {{ selectedMovie.vote_average }} / 10</p>
-          <p><strong>Overview:</strong> {{ selectedMovie.overview }}</p>
-          <p><strong>Genres:</strong></p>
-          <ul>
-            <li v-for="genre in selectedMovie.genres" :key="genre.id">{{ genre.name }}</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
-<script>
-import { mapState, mapActions } from 'vuex';
-
-export default {
-  data() {
-    return {
-      selectedMovie: null, // 클릭된 영화 정보
-    };
-  },
-  computed: {
-    ...mapState(['nowPlayingMovies', 'upcomingMovies', 'topRatedMovies']),
-  },
-  methods: {
-    ...mapActions(['fetchNowPlayingMovies', 'fetchUpcomingMovies', 'fetchTopRatedMovies']),
-
-    // 영화 포스터 클릭 시 선택된 영화 정보 저장
-    selectMovie(movie) {
-      this.selectedMovie = movie;
-      this.$nextTick(() => {
-        const movieDescription = document.querySelector('.movie-description');
-        if (movieDescription) {
-          movieDescription.classList.add('fade-in');
+  </template>
+  
+  <script>
+  export default {
+    data() {
+      return {
+        id: "",
+        password: "",
+        rememberMe: false,
+        showToast: false,
+        toastMessage: "",
+      };
+    },
+    computed: {
+      isEmailValid() {
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return emailPattern.test(this.id);
+      },
+    },
+    created() {
+      // 페이지 로드 시 로컬 스토리지의 Remember me 설정 확인
+      const rememberedUser = JSON.parse(localStorage.getItem("rememberedUser"));
+      if (rememberedUser && rememberedUser.rememberMe) {
+        this.id = rememberedUser.id;
+        this.password = rememberedUser.password;
+        this.rememberMe = true;
+        this.handleLogin(); // 자동 로그인 시도
+      }
+    },
+    methods: {
+      showToastMessage(message) {
+        this.toastMessage = message;
+        this.showToast = true;
+        setTimeout(() => {
+          this.showToast = false;
+        }, 3000);
+      },
+      handleLogin() {
+        if (!this.isEmailValid) {
+          this.showToastMessage("아이디는 이메일 형식이어야 합니다.");
+          return;
         }
-      });
+        
+        const storedUser = JSON.parse(localStorage.getItem("user"));
+        
+        if (storedUser && storedUser.id === this.id && storedUser.password === this.password) {
+          storedUser.isLoggedIn = true;
+          localStorage.setItem("user", JSON.stringify(storedUser));
+  
+          // Remember me 설정 저장
+          if (this.rememberMe) {
+            localStorage.setItem("rememberedUser", JSON.stringify({
+              id: this.id,
+              password: this.password,
+              rememberMe: this.rememberMe,
+            }));
+          } else {
+            localStorage.removeItem("rememberedUser");
+          }
+            // 페이지 새로고침
+        this.$router.push("/");
+          this.showToastMessage("로그인 성공!");
+  
+
+        } else {
+          this.showToastMessage("아이디 또는 비밀번호가 일치하지 않습니다.");
+        }
+      },
     },
-
-    // 선택된 영화 해제 (X 버튼 클릭 시)
-    deselectMovie() {
-      this.selectedMovie = null;
-    },
-
-    getMovieImageUrl(path) {
-      return `https://image.tmdb.org/t/p/w500${path}`;
-    },
-
-    formatDate(date) {
-      return new Date(date).toLocaleDateString();
-    },
-  },
-  mounted() {
-    this.fetchNowPlayingMovies(); // 현재 상영 중인 영화 목록 가져오기
-    this.fetchUpcomingMovies();   // 개봉 예정 영화 목록 가져오기
-    this.fetchTopRatedMovies();    // 높은 평점 영화 목록 가져오기
-  },
-};
-</script>
-
-<style scoped>
-.movie-list {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.movie-card {
-  transition: transform 0.3s ease-in-out;
-}
-
-.movie-poster {
-  transition: transform 0.3s ease-in-out;
-}
-
-.movie-card:hover .movie-poster {
-  transform: scale(1.1); /* 호버 시 확대 */
-}
-
-/* 선택된 영화 정보 */
-.selected-movie {
-  display: flex;
-  position: fixed; /* 고정 위치로 설정 */
-  top: 50px; /* 화면 상단에서의 거리 조정 */
-  left: 50%;
-  transform: translateX(-50%);
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-  background: rgba(0, 0, 0, 0.5);
-  padding: 20px;
-}
-
-.movie-detail {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.close-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  font-size: 24px;
-  color: white;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-}
-
-.large-poster {
-  max-width: 300px;  /* 포스터의 최대 크기를 제한 */
-  max-height: 450px; /* 포스터의 최대 높이를 제한 */
-  margin-bottom: 20px;
-  border-radius: 8px;
-}
-
-.movie-description {
-  color: white;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 20px;
-  border-radius: 10px;
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
-}
-
-.movie-description.fade-in {
-  opacity: 1;
-  transform: translateY(0);
-}
-</style>
+  };
+  </script>
+  
+  <style scoped>
+  .container {
+    max-width: 500px;
+  }
+  </style>
+  
