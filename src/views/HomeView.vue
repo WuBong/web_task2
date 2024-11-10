@@ -24,14 +24,14 @@
         </div>
       </div>
 
-      <!-- 선택된 영화 정보와 작은 포스터 -->
+      <!-- 선택된 영화 정보 (포스터 포함 및 우측 상단 닫기 버튼) -->
       <div v-if="selectedMovie" class="selected-movie">
         <div class="movie-detail">
+          <button class="close-btn" @click="deselectMovie">×</button>
           <img
             :src="getMovieImageUrl(selectedMovie.poster_path)"
             class="img-fluid large-poster"
             alt="selected movie poster"
-            height="400px"
           />
           <div class="movie-description fade-in">
             <h3>{{ selectedMovie.title }}</h3>
@@ -43,15 +43,6 @@
               <li v-for="genre in selectedMovie.genres" :key="genre.id">{{ genre.name }}</li>
             </ul>
           </div>
-        </div>
-        <!-- 좌측 상단 작은 포스터 -->
-        <div class="small-poster" @click="deselectMovie">
-          <img
-            :src="getMovieImageUrl(selectedMovie.poster_path)"
-            class="img-fluid"
-            alt="small poster"
-            height="100px"
-          />
         </div>
       </div>
     </div>
@@ -72,13 +63,19 @@ export default {
   },
   methods: {
     ...mapActions(['fetchMovies']),
-    
-    // 영화 포스터 클릭시 선택된 영화 정보 저장
+
+    // 영화 포스터 클릭 시 선택된 영화 정보 저장
     selectMovie(movie) {
       this.selectedMovie = movie;
+      this.$nextTick(() => {
+        const movieDescription = document.querySelector('.movie-description');
+        if (movieDescription) {
+          movieDescription.classList.add('fade-in');
+        }
+      });
     },
 
-    // 선택된 영화 해제 (작은 포스터 클릭시)
+    // 선택된 영화 해제 (X 버튼 클릭 시)
     deselectMovie() {
       this.selectedMovie = null;
     },
@@ -118,11 +115,10 @@ export default {
 /* 선택된 영화 정보 */
 .selected-movie {
   display: flex;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: fixed; /* 고정 위치로 설정 */
+  top: 50px; /* 화면 상단에서의 거리 조정 */
+  left: 50%;
+  transform: translateX(-50%);
   justify-content: center;
   align-items: center;
   z-index: 999;
@@ -133,10 +129,20 @@ export default {
 .movie-detail {
   position: relative;
   display: flex;
-  justify-content: center;
   flex-direction: column;
   align-items: center;
   text-align: center;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  color: white;
+  background: transparent;
+  border: none;
+  cursor: pointer;
 }
 
 .large-poster {
@@ -159,21 +165,5 @@ export default {
 .movie-description.fade-in {
   opacity: 1;
   transform: translateY(0);
-}
-
-/* 좌측 상단 작은 포스터 */
-.small-poster {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  cursor: pointer;
-  border-radius: 50%;
-  background: white;
-  padding: 5px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-.small-poster img {
-  border-radius: 50%;
 }
 </style>
