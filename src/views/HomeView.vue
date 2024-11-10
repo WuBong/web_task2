@@ -1,4 +1,3 @@
-<!-- /src/views/HomeView.vue-->
 <template>
   <div class="container">
     <h1 class="text-center my-4">Popular Movies</h1>
@@ -21,6 +20,15 @@
           <div class="card-body">
             <h5 class="card-title text-truncate">{{ movie.title }}</h5>
             <p class="card-text">{{ formatDate(movie.release_date) }}</p>
+            <!-- Wishlist 버튼 텍스트 -->
+            <button
+              class="wishlist-btn"
+              :class="wishlistContains(movie) ? 'btn-remove' : 'btn-add'"
+              @click.stop="toggleWishlist(movie)"
+              aria-label="Add/Remove to wishlist"
+            >
+              {{ wishlistContains(movie) ? 'Remove from Wishlist' : 'Add to Wishlist' }}
+            </button>
           </div>
         </div>
       </div>
@@ -28,7 +36,7 @@
       <!-- 선택된 영화 정보 (포스터 포함 및 우측 상단 닫기 버튼) -->
       <div v-if="selectedMovie" class="selected-movie">
         <div class="movie-detail">
-          <button class="close-btn" @click="deselectMovie">×</button>
+          <button class="close-btn" @click="deselectMovie" aria-label="Close Movie Details">×</button>
           <img
             :src="getMovieImageUrl(selectedMovie.poster_path)"
             class="img-fluid large-poster"
@@ -68,12 +76,6 @@ export default {
     // 영화 포스터 클릭 시 선택된 영화 정보 저장
     selectMovie(movie) {
       this.selectedMovie = movie;
-      this.$nextTick(() => {
-        const movieDescription = document.querySelector('.movie-description');
-        if (movieDescription) {
-          movieDescription.classList.add('fade-in');
-        }
-      });
     },
 
     // 선택된 영화 해제 (X 버튼 클릭 시)
@@ -81,12 +83,46 @@ export default {
       this.selectedMovie = null;
     },
 
+    // 영화 포스터 URL 반환
     getMovieImageUrl(path) {
       return `https://image.tmdb.org/t/p/w500${path}`;
     },
 
+    // 날짜 포맷 변환
     formatDate(date) {
       return new Date(date).toLocaleDateString();
+    },
+
+    // 영화가 wishlist에 있는지 확인
+    wishlistContains(movie) {
+      const wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+      return wishlist.some(item => item.id === movie.id);
+    },
+
+    // 영화 wishlist에 추가/삭제
+    toggleWishlist(movie) {
+      let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+
+      if (this.wishlistContains(movie)) {
+        // wishlist에서 영화 제거
+        wishlist = wishlist.filter(item => item.id !== movie.id);
+        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+        this.showToastMessage(`${movie.title} has been removed from your wishlist.`);
+      } else {
+        // wishlist에 영화 추가
+        wishlist.push(movie);
+        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+        this.showToastMessage(`${movie.title} has been added to your wishlist.`);
+      }
+    },
+
+    // Toast 메시지 표시
+    showToastMessage(message) {
+      this.toastMessage = message;
+      this.showToast = true;
+      setTimeout(() => {
+        this.showToast = false;
+      }, 3000);
     },
   },
   mounted() {
@@ -102,6 +138,7 @@ export default {
 }
 
 .movie-card {
+  position: relative; /* 카드에 상대 위치 설정 */
   transition: transform 0.3s ease-in-out;
 }
 
@@ -110,7 +147,7 @@ export default {
 }
 
 .movie-card:hover .movie-poster {
-  transform: scale(1.1); /* 호버 시 확대 */
+  transform: scale(1.05); /* 호버 시 확대 */
 }
 
 /* 선택된 영화 정보 */
@@ -125,6 +162,9 @@ export default {
   z-index: 999;
   background: rgba(0, 0, 0, 0.5);
   padding: 20px;
+  max-width: 90%;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .movie-detail {
@@ -166,5 +206,27 @@ export default {
 .movie-description.fade-in {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* 텍스트 버튼 스타일 */
+.wishlist-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: #007bff; /* 버튼 배경색 */
+  color: white; /* 텍스트 색상 */
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.wishlist-btn:hover {
+  background: #0056b3; /* 버튼 hover 시 색상 변경 */
+}
+
+.wishlist-btn:focus {
+  outline: none; /* 포커스 시 테두리 제거 */
 }
 </style>

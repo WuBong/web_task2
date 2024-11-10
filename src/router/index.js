@@ -24,7 +24,13 @@ const routes = [
       return import(/* webpackChunkName: "about" */ '../views/SignIn.vue')
     },
   },
-
+  {
+    path: '/popular',
+    name: 'popular',
+    component: function () {
+      return import(/* webpackChunkName: "about" */ '../views/Popular.vue')
+    },
+  },
   {
     path: '/wishlist',
     name: 'Wishlist',
