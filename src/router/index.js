@@ -47,6 +47,16 @@ const routes = [
     component: MovieDetail, 
     meta: { requiresAuth: true }, // 로그인 필요
   },
+
+  {
+    path: '/search',
+    name: 'Search',
+    component: function () {
+    return import(/* webpackChunkName: "about" */ '../views/Search.vue')
+    },
+    meta: { requiresAuth: true }, // 로그인 필요
+  },
+
 ]
 
 const router = createRouter({
