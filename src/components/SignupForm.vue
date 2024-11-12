@@ -1,3 +1,4 @@
+<!--components/SignupForm.vue-->
 <template>
     <div class="container mt-5">
       <h2>회원가입</h2>

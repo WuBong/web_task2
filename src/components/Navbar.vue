@@ -1,3 +1,4 @@
+<!--components/Navbar.vue-->
 <template>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container-fluid">
@@ -79,6 +80,6 @@
   </script>
   
   <style scoped>
-  /* You can add additional styling for the navbar if needed */
+
   </style>
   

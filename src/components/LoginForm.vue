@@ -1,3 +1,4 @@
+<!-- components/LoginForm.vue-->
 <template>
     <div class="container mt-5">
       <h2>로그인</h2>
