@@ -29,5 +29,15 @@ export default createStore({
       const data = await getMovies('movie/popular'); // getMovies 함수 호출
       commit('setMovies', data.results);
     },
+    async fetchMovies({ commit }, { query, page = 1 }) {
+      try {
+        const data = await getMovies('search/movie', { query, page }); // 검색 API 호출
+        commit('setMovies', data.results);
+        return data; // 컴포넌트에서 사용할 수 있도록 데이터 반환
+      } catch (error) {
+        console.error('영화 로드 실패:', error);
+        throw error;
+      }
+    },
   },
 });
