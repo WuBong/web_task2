@@ -1,112 +1,115 @@
 <template>
-  <div class="container">
-    <h1 class="text-center my-4">영화 검색</h1>
+  <div class="container mt-5">
+    <h1 class="text-center mb-4">Movies</h1>
 
-    <!-- 필터링 UI -->
-    <div class="filters mb-4">
-      <div class="row">
-        <!-- 평점 필터 -->
-        <div class="col-md-4">
-          <label for="rating" class="form-label">평점</label>
-          <select
-            v-model="selectedRating"
-            class="form-select"
-            @change="applyFilters"
-            id="rating"
-          >
-            <option value="">전체</option>
-            <option value="7">7 이상</option>
-            <option value="8">8 이상</option>
-            <option value="9">9 이상</option>
-          </select>
-        </div>
+    <!-- 필터링 옵션 -->
+    <div class="filter-controls">
+      <!-- 평점 필터 -->
+      <select v-model="selectedRating" @change="filterMovies">
+        <option value="">All Ratings</option>
+        <option value="7">7+</option>
+        <option value="8">8+</option>
+        <option value="9">9+</option>
+      </select>
 
-        <!-- 정렬 필터 -->
-        <div class="col-md-4">
-          <label for="sort" class="form-label">정렬</label>
-          <select
-            v-model="selectedSort"
-            class="form-select"
-            @change="applyFilters"
-            id="sort"
-          >
-            <option value="">기본</option>
-            <option value="popularity.desc">인기순</option>
-            <option value="release_date.desc">개봉일순</option>
-            <option value="vote_average.desc">평점순</option>
-          </select>
-        </div>
+      <!-- 개봉년도 필터 -->
+      <select v-model="selectedReleaseYear" @change="filterMovies">
+        <option value="">All Years</option>
+        <option value="2023">2023</option>
+        <option value="2022">2022</option>
+        <option value="2021">2021</option>
+        <option value="2020">2020</option>
+      </select>
 
-        <!-- 필터 초기화 버튼 -->
-        <div class="col-md-4 d-flex align-items-end">
-          <button class="btn btn-secondary" @click="resetFilters">필터 초기화</button>
-        </div>
-      </div>
-    </div>
+      <!-- 장르 필터 -->
+      <select v-model="selectedGenre" @change="filterMovies">
+        <option value="">All Genres</option>
+        <option v-for="genre in genres" :key="genre.id" :value="genre.id">
+          {{ genre.name }}
+        </option>
+      </select>
 
-    <!-- 로딩 상태 -->
-    <div v-if="loading" class="text-center my-4">
-      <span class="spinner-border text-primary" role="status"></span>
-      <span>로딩 중...</span>
+      <!-- 정렬 옵션 -->
+      <select v-model="selectedSort" @change="filterMovies">
+        <option value="popularity.desc">Popularity (High to Low)</option>
+        <option value="popularity.asc">Popularity (Low to High)</option>
+        <option value="vote_average.desc">Rating (High to Low)</option>
+        <option value="vote_average.asc">Rating (Low to High)</option>
+      </select>
+
+      <!-- 필터 초기화 버튼 -->
+      <button @click="resetFilters" class="btn btn-secondary">Reset Filters</button>
     </div>
 
     <!-- 영화 목록 -->
-    <div v-if="!loading && movies.length > 0" class="row movie-list">
-      <div
-        v-for="(movie, index) in movies"
-        :key="movie.id"
-        class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4 movie-card"
-        @click="selectMovie(movie)"
-      >
-        <div class="card">
-          <img
-            :src="getMovieImageUrl(movie.poster_path)"
-            class="card-img-top movie-poster"
-            :alt="movie.title"
-            height="300px"
-          />
+    <div class="row">
+      <div v-for="movie in filteredMovies" :key="movie.id" class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+        <div class="card" @click="selectMovie(movie)">
+          <img :src="getMovieImageUrl(movie.poster_path)" class="card-img-top movie-poster" :alt="movie.title" />
           <div class="card-body">
             <h5 class="card-title text-truncate">{{ movie.title }}</h5>
-            <p class="card-text">{{ formatDate(movie.release_date) }}</p>
+            <p class="card-text text-muted">{{ formatDate(movie.release_date) }}</p>
+            <button
+              class="btn"
+              :class="isInWishlist(movie) ? 'btn-danger' : 'btn-primary'"
+              @click="toggleWishlist(movie)"
+            >
+              {{ isInWishlist(movie) ? 'Remove from Wishlist' : 'Add to Wishlist' }}
+            </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 더 이상 데이터가 없을 때 -->
-    <div v-if="endOfList" class="text-center my-4">
-      <span>더 이상 영화가 없습니다.</span>
+    <!-- 선택된 영화의 상세 정보 -->
+    <div v-if="selectedMovie" class="selected-movie">
+      <div class="movie-detail">
+        <button class="close-btn" @click="deselectMovie">×</button>
+        <img :src="getMovieImageUrl(selectedMovie.poster_path)" class="img-fluid large-poster" alt="selected movie poster" />
+        <div class="movie-description">
+          <h3>{{ selectedMovie.title }}</h3>
+          <p><strong>Release Date:</strong> {{ formatDate(selectedMovie.release_date) }}</p>
+          <p><strong>Rating:</strong> {{ selectedMovie.vote_average }} / 10</p>
+          <p><strong>Overview:</strong> {{ selectedMovie.overview }}</p>
+          <p><strong>Genres:</strong></p>
+          <ul>
+            <li v-for="genre in selectedMovie.genres" :key="genre.id">{{ genre.name }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div v-if="isLoading" class="text-center mt-4">
+      <span>Loading...</span>
     </div>
   </div>
 </template>
 
 <script>
-import { mapActions, mapState } from 'vuex';
-import { getMovies } from '../api'; // getMovies API 함수
+import axios from 'axios';
 
 export default {
   data() {
     return {
-      loading: false, // 로딩 상태
-      endOfList: false, // 더 이상 영화가 없을 때 표시
-      page: 1, // 현재 페이지
-      query: '', // 검색 쿼리
-      selectedRating: '', // 선택된 평점
-      selectedSort: '', // 선택된 정렬
+      movies: [],
+      filteredMovies: [],
+      genres: [], // 장르 목록
+      isLoading: false,
+      currentPage: 1,
+      totalPages: 1,
+      selectedRating: '', 
+      selectedReleaseYear: '', 
+      selectedSort: 'popularity.desc',
+      selectedGenre: '', // 선택된 장르
+      wishlist: JSON.parse(localStorage.getItem('wishlist')) || [],
+      selectedMovie: null,
     };
   },
-  computed: {
-    ...mapState(['movies']), // Vuex에서 가져온 영화 목록
-  },
   methods: {
-    ...mapActions(['fetchMovies']), // Vuex에서 fetchMovies 액션
-
-    // 영화 포스터 이미지 URL
+    // 영화 이미지 URL 반환
     getMovieImageUrl(path) {
-      if (path) {
-        return `https://image.tmdb.org/t/p/w500${path}`;
-      }
-      return 'https://via.placeholder.com/500x750?text=No+Image'; // 이미지가 없으면 기본 이미지 표시
+      return path ? `https://image.tmdb.org/t/p/w500${path}` : "https://via.placeholder.com/500x750?text=No+Image";
     },
 
     // 날짜 포맷팅
@@ -114,81 +117,152 @@ export default {
       return new Date(date).toLocaleDateString();
     },
 
-    // 영화 선택 시
+    // 영화 위시리스트 토글
+    toggleWishlist(movie) {
+      const index = this.wishlist.findIndex((m) => m.id === movie.id);
+      if (index !== -1) {
+        this.wishlist.splice(index, 1);
+      } else {
+        this.wishlist.push(movie);
+      }
+      localStorage.setItem('wishlist', JSON.stringify(this.wishlist));
+    },
+
+    // 위시리스트에 영화가 있는지 확인
+    isInWishlist(movie) {
+      return this.wishlist.some((m) => m.id === movie.id);
+    },
+
+    // 영화 선택 시 상세 정보 표시
     selectMovie(movie) {
-      // 영화 상세보기 로직 추가 가능
+      this.selectedMovie = movie;
     },
 
-    // 필터링 적용
-    applyFilters() {
-      this.page = 1; // 필터가 변경될 때 페이지를 초기화
-      this.endOfList = false;
-      this.loadMoreMovies();
+    // 영화 선택 해제
+    deselectMovie() {
+      this.selectedMovie = null;
     },
 
-    // 추가 영화 로드
-    async loadMoreMovies() {
-      this.loading = true;
-      const params = {
-        query: this.query,
-        page: this.page,
-        rating: this.selectedRating,
-        sort: this.selectedSort,
-      };
+    // 필터링 함수
+    filterMovies() {
+      this.filteredMovies = this.movies
+        .filter((movie) => {
+          // 평점 필터링
+          if (this.selectedRating && movie.vote_average < this.selectedRating) {
+            return false;
+          }
+          // 개봉년도 필터링
+          if (this.selectedReleaseYear && movie.release_date.slice(0, 4) !== this.selectedReleaseYear) {
+            return false;
+          }
+          // 장르 필터링
+          if (this.selectedGenre && !movie.genre_ids.includes(Number(this.selectedGenre))) {
+            return false;
+          }
+          return true;
+        })
+        .sort((a, b) => {
+          // 정렬
+          if (this.selectedSort === 'popularity.desc') {
+            return b.popularity - a.popularity;
+          } else if (this.selectedSort === 'popularity.asc') {
+            return a.popularity - b.popularity;
+          } else if (this.selectedSort === 'vote_average.desc') {
+            return b.vote_average - a.vote_average;
+          } else if (this.selectedSort === 'vote_average.asc') {
+            return a.vote_average - b.vote_average;
+          }
+          return 0;
+        });
+    },
+
+    // 영화 데이터 가져오기
+    async fetchMovies() {
+      this.isLoading = true;
       try {
-        const data = await this.fetchMovies(params);
-        if (data.results.length === 0) {
-          this.endOfList = true;
-        }
+        const apiKey = 'b5d15fa17676447771db0ab7d3c7faa2'; // TMDB API Key
+        const response = await axios.get('https://api.themoviedb.org/3/movie/popular', {
+          params: { api_key: apiKey, page: this.currentPage },
+        });
+        // 기존 데이터에 새로운 영화 추가
+        this.movies = [...this.movies, ...response.data.results];
+        this.totalPages = response.data.total_pages;
+
+        // 필터링 적용
+        this.filterMovies();
       } catch (error) {
-        console.error('영화 로드 실패:', error);
+        console.error('Error fetching movies:', error);
       } finally {
-        this.loading = false;
+        this.isLoading = false;
       }
     },
 
-    // 필터 초기화
+    // 장르 목록 가져오기
+    async fetchGenres() {
+      try {
+        const apiKey = 'b5d15fa17676447771db0ab7d3c7faa2'; // TMDB API Key
+        const response = await axios.get('https://api.themoviedb.org/3/genre/movie/list', {
+          params: { api_key: apiKey },
+        });
+        this.genres = response.data.genres;
+      } catch (error) {
+        console.error('Error fetching genres:', error);
+      }
+    },
+
+    // 스크롤 이벤트 처리
+    handleScroll() {
+      const bottom =
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100;
+      if (bottom && !this.isLoading && this.currentPage < this.totalPages) {
+        this.currentPage++;
+        this.fetchMovies(); // 새로운 데이터를 로드하고 필터링을 다시 적용
+      }
+    },
+
+    // 필터 초기화 함수
     resetFilters() {
       this.selectedRating = '';
-      this.selectedSort = '';
-      this.page = 1;
-      this.endOfList = false;
-      this.loadMoreMovies(); // 필터 초기화 후 첫 번째 페이지 로드
+      this.selectedReleaseYear = '';
+      this.selectedSort = 'popularity.desc';
+      this.selectedGenre = '';
+      this.filterMovies(); // 초기화 후 필터링 적용
     },
   },
   mounted() {
-    if (this.query) {
-      this.loadMoreMovies(); // 쿼리가 있을 때 영화 로드
-    }
-    window.addEventListener('scroll', this.handleScroll);
+    this.fetchMovies(); // 처음 영화 목록 가져오기
+    this.fetchGenres(); // 장르 목록 가져오기
+    window.addEventListener('scroll', this.handleScroll); // 스크롤 이벤트 리스너 등록
   },
   beforeDestroy() {
-    window.removeEventListener('scroll', this.handleScroll);
+    window.removeEventListener('scroll', this.handleScroll); // 스크롤 이벤트 리스너 제거
   },
 };
 </script>
 
 <style scoped>
-.movie-list {
+/* 기존 스타일 유지 */
+
+.filter-controls {
+  margin-bottom: 20px;
   display: flex;
-  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
 }
 
-.movie-card {
-  position: relative;
-  transition: transform 0.3s ease-in-out;
+.filter-controls select {
+  padding: 5px 10px;
 }
 
-.movie-poster {
-  transition: transform 0.3s ease-in-out;
+.filter-controls button {
+  padding: 5px 10px;
+  background-color: #6c757d;
+  border: none;
+  color: white;
+  cursor: pointer;
 }
 
-.movie-card:hover .movie-poster {
-  transform: scale(1.05);
-}
-
-.spinner-border {
-  width: 3rem;
-  height: 3rem;
+.filter-controls button:hover {
+  background-color: #5a6268;
 }
 </style>
