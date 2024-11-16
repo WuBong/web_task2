@@ -1,6 +1,6 @@
 <template>
   <div class="container mt-5">
-    <h1 class="text-center mb-4">Movies</h1>
+    <h1 class="text-center mb-4">Search</h1>
 
     <!-- 필터링 옵션 -->
     <div class="filter-controls">
@@ -44,15 +44,22 @@
     <!-- 영화 목록 -->
     <div class="row">
       <div v-for="movie in filteredMovies" :key="movie.id" class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
-        <div class="card" @click="selectMovie(movie)">
-          <img :src="getMovieImageUrl(movie.poster_path)" class="card-img-top movie-poster" :alt="movie.title" />
+        <div class="card">
+          <!-- 포스터 클릭 시 상세 정보 표시 -->
+          <img 
+            :src="getMovieImageUrl(movie.poster_path)" 
+            class="card-img-top movie-poster" 
+            :alt="movie.title" 
+            @click="selectMovie(movie)" 
+          />
           <div class="card-body">
             <h5 class="card-title text-truncate">{{ movie.title }}</h5>
             <p class="card-text text-muted">{{ formatDate(movie.release_date) }}</p>
+            <!-- 버튼 클릭 시 위시리스트 토글 -->
             <button
               class="btn"
               :class="isInWishlist(movie) ? 'btn-danger' : 'btn-primary'"
-              @click="toggleWishlist(movie)"
+              @click.stop="toggleWishlist(movie)"
             >
               {{ isInWishlist(movie) ? 'Remove from Wishlist' : 'Add to Wishlist' }}
             </button>
@@ -235,34 +242,54 @@ export default {
     window.addEventListener('scroll', this.handleScroll); // 스크롤 이벤트 리스너 등록
   },
   beforeDestroy() {
-    window.removeEventListener('scroll', this.handleScroll); // 스크롤 이벤트 리스너 제거
+    window.removeEventListener('scroll', this.handleScroll); // 스크롤 이벤트 리스너 해제
   },
 };
 </script>
 
-<style scoped>
-/* 기존 스타일 유지 */
-
-.filter-controls {
-  margin-bottom: 20px;
+<style>
+.movie-poster {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.movie-poster:hover {
+  transform: scale(1.05);
+}
+.selected-movie {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.8);
   display: flex;
-  gap: 10px;
   justify-content: center;
+  align-items: center;
+  color: white;
+  z-index: 1000;
 }
-
-.filter-controls select {
-  padding: 5px 10px;
+.movie-detail {
+  background-color: #333;
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  gap: 20px;
 }
-
-.filter-controls button {
-  padding: 5px 10px;
-  background-color: #6c757d;
+.large-poster {
+  max-height: 400px;
+  border-radius: 10px;
+}
+.movie-description {
+  flex-grow: 1;
+}
+.close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
   border: none;
   color: white;
+  font-size: 24px;
   cursor: pointer;
-}
-
-.filter-controls button:hover {
-  background-color: #5a6268;
 }
 </style>
