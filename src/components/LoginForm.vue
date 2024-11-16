@@ -123,8 +123,8 @@
           } else {
             localStorage.removeItem("rememberedUser");
           }
-            // 페이지 새로고침
-        this.$router.push("/");
+            // 페이지 이동
+          window.location.href = '/';
           this.showToastMessage("로그인 성공!");
   
 
