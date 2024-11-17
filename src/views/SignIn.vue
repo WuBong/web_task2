@@ -1,5 +1,6 @@
 <template>
     <div class="d-flex justify-content-center align-items-center flex-column" style="height: 100vh;">
+
       <!-- 부트스트랩 스타일 적용된 토글 버튼 -->
       <button @click="toggleForm" class="btn btn-dark mb-4">
         {{ isLogin ? '회원가입' : '로그인' }}
