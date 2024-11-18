@@ -26,9 +26,13 @@ public
 
 src
 ├─assets
+
 ├─components
+
 ├─router
+
 ├─store
+
 └─views
 
 assets은 사진과 같은 이미지 및 사이트를 만들 때 필요한 소스가 저장된 폴더입니다.
